@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Jimpitan RT 009 RW 007</title>
+  <link rel="icon" type="image/png" href="logo.png" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding-top: 10px;
+      font-family: 'Poppins', sans-serif;
+      background-color: #fefefe;
+      color: #333;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      justify-content: center;
+      padding: 20px;
+      background-color: #b00020;
+      color: white;
+      font-size: 20px;
+      font-weight: 600;
+      margin: 10px 20px;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    header img { height: 40px; }
+    .tab-menu {
+      display: flex;
+      background: #ffe5e5;
+      margin: 20px;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .tab-menu button {
+      flex: 1;
+      padding: 14px;
+      border: none;
+      background: #ffd6d6;
+      font-size: 16px;
+      font-weight: 600;
+      color: #b00020;
+      cursor: pointer;
+    }
+    .tab-menu button.active {
+      background: #b00020;
+      color: white;
+    }
+    .tab-content {
+      display: none;
+      padding: 20px;
+      max-width: 800px;
+      margin: auto;
+    }
+    .tab-content.active { display: block; }
+    input, select, button {
+      font-size: 16px;
+      padding: 12px;
+      margin-bottom: 16px;
+      width: 100%;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: right;
+    }
+    th:first-child, td:first-child { text-align: left; }
+    th {
+      background-color: #ffe5e5;
+      color: #b00020;
+    }
+    .btn-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .btn-hapus {
+      background: #b00020;
+      color: white;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .rekap-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .rekap-item {
+      display: flex;
+      background: #fff3f3;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 15px;
+    }
+    .rekap-item .nama {
+      flex: 1;
+      text-align: left;
+    }
+    .rekap-item .nominal {
+      width: 100px;
+      text-align: right;
+      font-weight: 600;
+    }
+    .rekap-harian {
+      margin-top: 0px; /* diperbaiki: naikkan */
+      font-size: 15px;
+    }
+    .rekap-harian div {
+      background: #f8f8f8;
+      padding: 10px;
+      border-radius: 10px;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .tab-wrapper {
+      padding: 0 20px;
+      max-width: 800px;
+      margin: auto;
+    }
+
+    /* Styling untuk tulisan Reset duku sebelum masuk */
+    .peringatan-reset {
+      font-size: 12px;
+      color: #ffffff;
+      margin-bottom: 6px;
+      opacity: 0.8;
+    }
+
+    /* Styling untuk tulisan Jimpitan Digital */  
+    .judul-jimpitan {
+      font-size: 28px;
+      color: rgba(184, 13, 13, 0.8); /* merah kehitaman transparan */
+      margin-bottom: 40px; /* Diperbesar agar lebih renggang dari logo */
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.1);
+    }
+
+    /* Styling untuk tombol hapus di halaman tabel */ 
+    td button.btn-hapus {
+      display: inline-block;
+      vertical-align: middle;
+      padding: 4px 8px;
+      height: auto;
+      margin: 0;
+    }
+
+    td {
+      vertical-align: middle;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+  </style>
+</head>
+
+<body>
+
+  <!-- Halaman Absen -->
+<div id="absensiOverlay" style="
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(to bottom, #300000, #b00020);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+  font-family: 'Poppins', sans-serif;
+">
+
+
+  <!-- Tambahan teks judul -->
+  <h1 class="judul-jimpitan">Jimpitan Digital</h1>
+
+  <!-- Logo -->
+  <img src="logo.png" alt="Logo Besar" style="width: 100px; margin-bottom: 30px;" />
+
+  <!-- Judul absen -->
+  <h2 style="margin-bottom: 20px;">Silahkan Absen</h2>
+
+  <!-- Dropdown Group -->
+<select id="groupSelect" style="
+  appearance: right;
+  -webkit-appearance: right;
+  -moz-appearance: right;
+  padding: 12px 24px;
+  padding-right: 50px;
+  font-size: 16px;
+  border-radius: 10px;
+  border: none;
+  margin-bottom: 16px;
+  min-width: 70%;
+  max-width: 70vw;
+  width: auto;
+  background-color: white;
+  color: #333;
+  background-image: url('data:image/svg+xml;utf8,<svg fill=%23b00020 height=20 viewBox=\'0 0 24 24\' width=20 xmlns=\'http://www.w3.org/2000/svg\'><path d=\'M7 10l5 5 5-5z\'/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 20px;
+">
+  <option value="">Grup Berapa..?</option>
+  <option value="GRUP 1">GRUP 1</option>
+  <option value="GRUP 2">GRUP 2</option>
+  <option value="BUKAN PETUGAS">BUKAN PETUGAS</option>
+</select>
+
+<!-- Dropdown Nama -->
+<select id="namaSelect" style="
+  appearance: right;
+  -webkit-appearance: right;
+  -moz-appearance: right;
+  padding: 12px 24px;
+  padding-right: 50px;
+  font-size: 16px;
+  border-radius: 10px;
+  border: none;
+  margin-bottom: 24px;
+  min-width: 70%;
+  max-width: 70vw;
+  width: auto;
+  background-color: white;
+  color: #333;
+  background-image: url('data:image/svg+xml;utf8,<svg fill=%23b00020 height=20 viewBox=\'0 0 24 24\' width=20 xmlns=\'http://www.w3.org/2000/svg\'><path d=\'M7 10l5 5 5-5z\'/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 20px;
+">
+  <option value="">Nama Petugas</option>
+</select>
+
+<p class="peringatan-reset">Reset dulu sebelum masuk pertama kali</p>
+
+
+<!-- Tombol Reset Semua -->
+<p style="margin-bottom: 8px; text-decoration: underline; color: white; cursor: pointer;"
+   onclick="handleResetFromAbsen()">🔒 Reset Semua Data</p>
+
+
+<!-- Tombol Masuk -->
+<button id="btnMasuk" onclick="masukApp()" title="Reset terlebih dahulu sebelum masuk" style="
+  padding: 12px 24px;
+  font-size: 16px;
+  background: rgb(55, 14, 14);
+  color: #ffffff;
+  font-weight: 600;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  width: auto;
+  min-width: 50%;
+  max-width: 50vw;
+"disabled>MASUK</button>
+
+</div>
+
+<!-- Spinner kirim ke server -->
+<div id="toast" style="
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #323232;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 15px;
+  display: none;
+  z-index: 999999;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  animation: fadein 0.3s, fadeout 0.3s 2.7s;
+">
+  ✅ Data berhasil terkirim
+</div>
+
+<style>
+@keyframes fadein {
+  from { opacity: 0; bottom: 0; }
+  to { opacity: 1; bottom: 30px; }
+}
+@keyframes fadeout {
+  from { opacity: 1; bottom: 30px; }
+  to { opacity: 0; bottom: 0; }
+}
+</style>
+
+  
+  <header>
+    <img src="logo.png" alt="Logo" />
+    Jimpitan RT 9 RW 7
+  </header>
+
+  <div class="tab-wrapper">
+    <div class="tab-menu">
+      <button class="active" onclick="switchTab('inputTab', this)">Input</button>
+      <button onclick="switchTab('tabelTab', this)">Tabel</button>
+      <button onclick="switchTab('rekapTab', this)">Ringkasan</button>
+    </div>
+
+
+<!-- Mengirim data ke server -->
+<div id="spinner" style="
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(0,0,0,0.6);
+  z-index: 9999;
+  justify-content: center;
+  align-items: center;
+">
+  <div style="
+    background: white;
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  ">
+    <div class="loader" style="
+      width: 40px;
+      height: 40px;
+      border: 5px solid #ccc;
+      border-top: 5px solid #b00020;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
+    "></div>
+    <span style="color:#333; font-weight:600;">📤 Mengirim data ke server...</span>
+  </div>
+</div>
+
+
+    <!-- Ini adalah komentar untuk keterangan di bawah nama petugas -->
+    <div class="tab-content active" id="inputTab">
+      <input type="text" id="petugas" placeholder="Nama Petugas" readonly style="font-weight: bold; background-color: #f2f2f2; color: #444;" />
+      <small style="display:block; margin-top:-12px; margin-bottom:16px; font-size:12px; color:#777;">*Petugas yang input jimpitan hari ini.</small>
+
+      <input type="date" id="tanggal" />
+      <small style="display:block; margin-top:-12px; margin-bottom:24px; font-size:12px; color:#777;">Jangan diubah, sesuai jadwal hari ini.</small>
+
+      <input list="wargaList" id="nama" placeholder="Nama warga..." style="margin-top:12px;" />
+
+      <datalist id="wargaList">
+
+        <!-- daftar nama warga (dipendekkan untuk singkat) -->
+        <option value="ADI MBAH PITA"><option value="AGUNG TRIARSO"><option value="AGUS PURBOYONO"><option value="AGUS SUHERMAN"><option value="AHMAD JAUHARUL FARID"><option value="ALI FATAH"><option value="ALI IMRON"><option value="AMIN SETYONO"><option value="ARIS SAMITIO"><option value="BENNY"><option value="BUDI BAGUS SANTOSO"><option value="DASUKI"><option value="FAIZIN"><option value="GIANTO"><option value="HARNO"><option value="HARTOPO"><option value="JOKO/MBAK YANA"><option value="KOZIN"><option value="KUSNADI"><option value="MARIYO"><option value="MOCH ALY MAS AD"><option value="MUHAMMAD AGUS"><option value="NGALI"><option value="NUR AZIS"><option value="NUR KHOLISH"><option value="PAULUS IRAWAN"><option value="PURWANTO"><option value="RAGIL SANTOSO"><option value="REZA"><option value="RISTANTO ARIS SAPUTRO"><option value="RIZKI AGUNG UTOMO"><option value="ROS HARMANTO"><option value="SARJO"><option value="SLAMET"><option value="SLAMET UTOMO"><option value="SOLEKAN"><option value="SUBCHAN"><option value="SUGIONO"><option value="SUGIYANTO"><option value="SUJONO"><option value="SUPRIYADI"><option value="SUPRIYANTO"><option value="SUWITO"><option value="SUYANTONO"><option value="UMAR SADLI"><option value="WIDODO"><option value="YUSUF LUKMAN HAKIM"><option value="YOGA"><option value="YOLANDA">
+      </datalist>
+
+      <select id="jumlah">
+        <option value="">Pilih jumlah</option>
+        <option value="0">0</option><option value="500">500</option><option value="1000">1.000</option>
+        <option value="1500">1.500</option><option value="2000">2.000</option><option value="2500">2.500</option>
+      </select>
+      <button id="btnTambah" onclick="tambahData()">Tambah</button>
+    </div>
+
+    <div class="tab-content" id="tabelTab">
+      <div class="btn-group">
+        <button onclick="simpanKeGoogleSheets()">Kirim ke Server</button>
+        <button onclick="exportExcel()">Export ke Excel</button>
+      </div>
+
+      <input type="text" id="filterNama" oninput="tampilkanData()" placeholder="Filter nama..." />
+      <table>
+        <thead><tr><th>Nama</th><th>Jumlah</th><th>Hapus</th></tr></thead>
+        <tbody id="tabelData"></tbody>
+      </table>
+      <div id="keteranganTanggal" style="text-align: right; margin-top: 8px; font-size: 14px; color: #555;"></div>
+    </div>
+
+    <div class="tab-content" id="rekapTab">
+      <h3>Ringkasan Harian</h3>
+      <div class="rekap-harian" id="rekapHari"></div>
+
+      <h3 style="margin-top: 30px;">Tidak Mengisi Jimpitan</h3>
+      <div class="rekap-grid" id="rekapWarga"></div>
+    </div>
+  </div>
+
+
+  <script>
+
+    // Reset semua data
+  function handleResetFromAbsen() {
+  const konfirmasi = prompt("Ketik 'RESET SEMUA' untuk konfirmasi:");
+
+  if (konfirmasi === "RESET SEMUA") {
+    data = [];
+    simpanData();
+    tampilkanData();
+    tampilkanRingkasan();
+    alert("✅ Semua data berhasil direset.");
+
+    localStorage.setItem("sudahReset", "true"); // <--- Tambahan penting
+
+    // Aktifkan tombol Masuk
+    document.getElementById("btnMasuk").disabled = false;
+  } else {
+    alert("❌ Reset dibatalkan.");
+  }
+}
+
+
+document.addEventListener("DOMContentLoaded", function () {
+  if (localStorage.getItem("sudahReset") === "true") {
+    document.getElementById("btnMasuk").disabled = false;
+  }
+});
+
+
+    const grupWarga = {
+  "GRUP 1": ["AGUS PURBOYONO", "AGUS SUHERMAN", "ALI IMRON", "BUDI BAGUS SANTOSO", "DASUKI", "SUBCHAN"],
+  "GRUP 2": ["AGUNG TRIARSO", "AHMAD JAUHARUL FARID", "ALI FATAH", "RISTANTO ARIS SAPUTRO", "UMAR SADLI", "WIDODO"],
+  "BUKAN PETUGAS": ["BUKAN PETUGAS"],
+
+};
+
+document.getElementById("groupSelect").addEventListener("change", function () {
+  const selectedGroup = this.value;
+  const namaSelect = document.getElementById("namaSelect");
+  namaSelect.innerHTML = '<option value="">Nama Petugas</option>';
+
+  if (grupWarga[selectedGroup]) {
+    grupWarga[selectedGroup].forEach(nama => {
+      const option = document.createElement("option");
+      option.value = nama;
+      option.textContent = nama;
+      namaSelect.appendChild(option);
+    });
+  }
+});
+
+
+function masukApp() {
+  const grup = document.getElementById("groupSelect").value;
+  const nama = document.getElementById("namaSelect").value;
+  if (!grup || !nama) return alert("Harap pilih grup dan nama terlebih dahulu!");
+
+  // Simpan absen
+  localStorage.setItem("absensiNama", nama);
+  localStorage.setItem("absensiGroup", grup);
+  localStorage.setItem("absensiTerakhir", Date.now()); // <--- simpan waktu
+
+// JANGAN hapus flag reset di sini
+// localStorage.removeItem("sudahReset");
+
+  // Isi kolom petugas di halaman input
+  document.getElementById("petugas").value = nama;
+
+  // Sembunyikan halaman absensi
+  document.getElementById("absensiOverlay").style.display = "none";
+}
+
+
+
+  const semuaWarga = ["ADI MBAH PITA", "AGUNG TRIARSO", "AGUS PURBOYONO", "AGUS SUHERMAN", "AHMAD JAUHARUL FARID",
+  "ALI FATAH", "ALI IMRON", "AMIN SETYONO", "ARIS SAMITIO", "BENNY", "BUDI BAGUS SANTOSO",
+  "DASUKI", "FAIZIN", "GIANTO", "HARNO", "HARTOPO", "JOKO/MBAK YANA", "KOZIN", "KUSNADI",
+  "MARIYO", "MOCH ALY MAS AD", "MUHAMMAD AGUS", "NGALI", "NUR AZIS", "NUR KHOLISH",
+  "PAULUS IRAWAN", "PURWANTO", "RAGIL SANTOSO", "REZA", "RISTANTO ARIS SAPUTRO",
+  "RIZKI AGUNG UTOMO", "ROS HARMANTO", "SARJO", "SLAMET", "SLAMET UTOMO", "SOLEKAN",
+  "SUBCHAN", "SUGIONO", "SUGIYANTO", "SUJONO", "SUPRIYADI", "SUPRIYANTO", "SUWITO",
+  "SUYANTONO", "UMAR SADLI", "WIDODO", "YUSUF LUKMAN HAKIM", "YOGA", "YOLANDA"];
+
+
+    let data = JSON.parse(localStorage.getItem("jimpitanData")) || [];
+    document.getElementById("tanggal").valueAsDate = new Date();
+
+    function simpanData() {
+      localStorage.setItem("jimpitanData", JSON.stringify(data));
+    }
+
+function tambahData() {
+  const petugas = document.getElementById("petugas").value;
+  const nama = document.getElementById("nama").value.trim();
+  const tanggal = document.getElementById("tanggal").value;
+  const jumlah = parseInt(document.getElementById("jumlah").value);
+
+  if (!semuaWarga.includes(nama)) return alert("⚠️ Nama tidak ditemukan dalam daftar warga.");
+  if (!nama || !tanggal || isNaN(jumlah)) return alert("Lengkapi semua data.");
+
+  const index = data.findIndex(item => item.nama === nama && item.tanggal === tanggal);
+  if (index !== -1) {
+    data[index].jumlah = jumlah;
+    alert("🔁 Data diperbarui!");
+  } else {
+    data.push({ nama, tanggal, jumlah, petugas });
+    alert("✅ Data ditambahkan!");
+  }
+
+  simpanData();
+  tampilkanData();
+  tampilkanRingkasan();
+
+  document.getElementById("nama").value = "";
+  document.getElementById("jumlah").value = "";
+  document.getElementById("tanggal").valueAsDate = new Date();
+}
+
+
+    function tampilkanData() {
+      const tbody = document.getElementById("tabelData");
+      const filter = document.getElementById("filterNama").value.toLowerCase();
+      tbody.innerHTML = "";
+      const today = new Date().toISOString().split('T')[0];
+      let totalHari = 0;
+
+      data.filter(item => item.tanggal === today && item.nama.toLowerCase().includes(filter)).forEach((item, i) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td>${item.nama}</td><td>${item.jumlah.toLocaleString()}</td>
+          <td><button class="btn-hapus" onclick="hapusBaris(${i})">❌</button></td>`;
+        tbody.appendChild(tr);
+        totalHari += item.jumlah;
+      });
+
+      document.getElementById("keteranganTanggal").innerHTML =
+        `<span style="float:left;"><b>${today}</b></span><span><b>Total: ${totalHari.toLocaleString()}</b></span>`;
+    }
+
+
+        function hapusBaris(index) {
+      if (!confirm("Yakin ingin menghapus data ini?")) return;
+      data.splice(index, 1);
+      simpanData();
+      tampilkanData();
+      tampilkanRingkasan();
+    }
+
+
+    function tampilkanRingkasan() {
+      const hari = {};
+      data.forEach(({ tanggal, jumlah }) => {
+        hari[tanggal] = (hari[tanggal] || 0) + jumlah;
+      });
+
+      document.getElementById("rekapHari").innerHTML = Object.entries(hari)
+        .sort()
+        .map(([tgl, total]) => `<div><span>${tgl}</span><span>${total.toLocaleString()}</span></div>`)
+        .join('') || "Belum ada data";
+
+      const today = new Date().toISOString().split('T')[0];
+      const namaYangIsi = new Set(data.filter(d => d.tanggal === today && d.jumlah > 0).map(d => d.nama));
+      const wargaTidakIsi = semuaWarga.filter(nama => !namaYangIsi.has(nama));
+
+      document.getElementById("rekapWarga").innerHTML = wargaTidakIsi.map(nama => `
+        <div class="rekap-item">
+          <span class="nama">${nama}</span>
+          <span class="nominal">0</span>
+        </div>
+      `).join('') || "<i>Semua warga sudah mengisi hari ini</i>";
+    }
+
+
+
+
+    function switchTab(id, btn) {
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-menu button').forEach(b => b.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      btn.classList.add('active');
+      if (id === 'tabelTab') tampilkanData();
+      if (id === 'rekapTab') tampilkanRingkasan();
+    }
+
+    function exportExcel() {
+      if (data.length === 0) return alert("Belum ada data.");
+      const unik = Array.from(new Map(data.map(d => [`${d.nama}-${d.tanggal}`, d])).values());
+      const ws = XLSX.utils.json_to_sheet(unik);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Jimpitan");
+      XLSX.writeFile(wb, "data_jimpitan.xlsx");
+    }
+
+    function backupJSON() {
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "backup_jimpitan.json";
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+function simpanKeGoogleSheets() {
+  if (data.length === 0) return alert("Tidak ada data untuk disimpan.");
+  if (!confirm("Yakin ingin mengirim data ke server?")) return;
+
+  const timestamp = new Date().toISOString();
+  const dataDenganWaktu = data.map(item => ({
+    ...item,
+    timestamp: timestamp
+  }));
+
+  // Tampilkan spinner keren
+  const spinner = document.getElementById("spinner");
+  spinner.style.display = "flex";
+
+  fetch('https://script.google.com/macros/s/AKfycbwA0f-dSZDDjiDXEIjHAyxrR_oicWuOK25ccTX_rnJBVFASY7fBzsrwKf2KZ-X2Xwwa/exec', {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(dataDenganWaktu),
+    redirect: 'follow'
+  })
+
+.then(res => res.text())
+.then(txt => {
+  spinner.style.display = "none"; // sembunyikan dulu
+  showToast("✅ Data berhasil terkirim"); // tampilkan toast
+})
+.catch(err => {
+  spinner.style.display = "none";
+  showToast("❌ Gagal: " + err.message); // tampilkan error juga sebagai toast
+});
+
+
+}
+
+
+function showToast(pesan = "✅ Data berhasil terkirim") {
+  const toast = document.getElementById("toast");
+  toast.textContent = pesan;
+  toast.style.display = "block";
+
+  setTimeout(() => {
+    toast.style.display = "none";
+  }, 2000); // 2 detik
+}
+
+
+    // Saat masuk halaman input, isi kolom Petugas otomatis dari localStorage
+document.addEventListener("DOMContentLoaded", function () {
+  const petugas = localStorage.getItem("absensiNama");
+  if (petugas) {
+    document.getElementById("petugas").value = petugas;
+  }
+});
+
+
+document.addEventListener("DOMContentLoaded", function () {
+  const now = Date.now();
+  const lastAbsensi = localStorage.getItem("absensiTerakhir");
+  const sudahReset = localStorage.getItem("sudahReset");
+
+  // Inisialisasi dropdown nama sesuai grup
+  document.getElementById("groupSelect").addEventListener("change", populateNamaPetugas);
+
+  // Saat sudah absen < 5 jam, lewati halaman absen
+if (
+  lastAbsensi &&
+  now - parseInt(lastAbsensi) < 5 * 60 * 60 * 1000 &&
+  sudahReset === "true"
+) {
+  // ✅ Syarat lolos: sudah absen < 5 jam DAN sudah reset
+  document.getElementById("absensiOverlay").style.display = "none";
+
+  const petugas = localStorage.getItem("absensiNama");
+  if (petugas) document.getElementById("petugas").value = petugas;
+} else {
+  // ❌ Harus reset dulu
+  document.getElementById("btnMasuk").disabled = true;
+}
+
+
+  // Jika petugas sudah ada di localStorage, isi di halaman input
+  const petugas = localStorage.getItem("absensiNama");
+  if (petugas) document.getElementById("petugas").value = petugas;
+});
+
+// Fungsi isi dropdown nama berdasarkan grup
+function populateNamaPetugas() {
+  const selectedGroup = document.getElementById("groupSelect").value;
+  const namaSelect = document.getElementById("namaSelect");
+
+  namaSelect.innerHTML = '<option value="">Nama Petugas</option>';
+
+  if (grupWarga[selectedGroup]) {
+    grupWarga[selectedGroup].forEach(nama => {
+      const option = document.createElement("option");
+      option.value = nama;
+      option.textContent = nama;
+      namaSelect.appendChild(option);
+    });
+  }
+}
+
+
+
+
+
+  </script>
+</body>
+</html>
